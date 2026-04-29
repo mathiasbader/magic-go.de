@@ -53,12 +53,51 @@
         'Sleeving rares in premium sleeves...', 'Hoping you drew the basic land...',
     ];
     const LOADING_SUBSET_SIZE = 12;
-    const ESTIMATED_LOADING_SECONDS = 60;
+    const ESTIMATED_LOADING_SECONDS = 90;
+    const PAST_TIMINGS_KEY = 'decksPastTimings';
+    const PAST_TIMINGS_MAX = 3;
 
     let decksLoaded = false;
     let loadingTimer = null;
     let progressTimer = null;
     let suggestController = null;
+    let loadingStartedAt = 0;
+
+    /** @return {number[]} elapsed seconds of the last successful runs, oldest first */
+    function readPastTimings() {
+        try {
+            const v = JSON.parse(localStorage.getItem(PAST_TIMINGS_KEY) || '[]');
+            return Array.isArray(v) ? v.filter(n => typeof n === 'number' && n > 0).slice(-PAST_TIMINGS_MAX) : [];
+        } catch { return []; }
+    }
+
+    function savePastTiming(seconds) {
+        const past = readPastTimings();
+        past.push(Math.round(seconds));
+        const trimmed = past.slice(-PAST_TIMINGS_MAX);
+        try { localStorage.setItem(PAST_TIMINGS_KEY, JSON.stringify(trimmed)); } catch {}
+    }
+
+    /**
+     * Render reference bars (one per past run) under the live progress bar.
+     * Each bar's width is `pastSeconds / scale * 100%`, so the longest past run
+     * (or the current run, whichever is bigger) maxes out at 100%.
+     */
+    function renderHistoryBars(history, scale) {
+        const el = document.getElementById('decks-progress-history');
+        if (!el) return;
+        if (!history.length) { el.innerHTML = ''; return; }
+        // Newest first so the most recent run is closest to the live bar.
+        el.innerHTML = history.slice().reverse().map((sec, i) => {
+            const pct = Math.min(100, (sec / scale) * 100).toFixed(1);
+            const label = ['Last run', '2 ago', '3 ago'][i] || `${i + 1} ago`;
+            return `<div class="progress-history-row">
+                <div class="progress-history-label">${label}</div>
+                <div class="progress-history-track"><div class="progress-history-fill" style="width:${pct}%;"></div></div>
+                <div class="progress-history-value">${sec}s</div>
+            </div>`;
+        }).join('');
+    }
 
     function renderManaPips(colors) {
         const cs = (colors || '').toUpperCase();
@@ -140,27 +179,38 @@
             setTimeout(() => { msgEl.textContent = msg; msgEl.style.opacity = '1'; }, 200);
         };
         next();
-        loadingTimer = setInterval(next, 2800);
+        loadingTimer = setInterval(next, 12000);
 
         fillEl.classList.remove('over', 'late');
         fillEl.style.width = '0%';
-        const start = Date.now();
+        const past = readPastTimings();
+        // Expected duration: max of the recent runs, or the static estimate when
+        // no history exists yet.
+        const expected = past.length ? Math.max(...past) : ESTIMATED_LOADING_SECONDS;
+        loadingStartedAt = Date.now();
         const tick = () => {
-            const elapsed = (Date.now() - start) / 1000;
-            const ratio = elapsed / ESTIMATED_LOADING_SECONDS;
+            const elapsed = (Date.now() - loadingStartedAt) / 1000;
+            // Scale the bar to fit the longest of {historical max, estimate, current
+            // elapsed}. As `elapsed` grows past the historical max, the scale grows
+            // with it and the past-run bars shrink relative to it — so the longest
+            // bar (whether historical or current) is always 100% wide.
+            const scale = Math.max(expected, elapsed, 1);
+            renderHistoryBars(past, scale);
+            const ratio = elapsed / expected;
+            fillEl.style.width = Math.min(100, (elapsed / scale) * 100).toFixed(1) + '%';
             if (ratio < 1) {
-                fillEl.style.width = (ratio * 100).toFixed(1) + '%';
-                labelEl.textContent = `${Math.floor(elapsed)}s / ~${ESTIMATED_LOADING_SECONDS}s`;
+                labelEl.textContent = past.length
+                    ? `${Math.floor(elapsed)}s / ~${expected}s (longest past run)`
+                    : `${Math.floor(elapsed)}s / ~${expected}s`;
+                fillEl.classList.remove('over', 'late');
+            } else if (ratio < 2) {
+                fillEl.classList.add('over');
+                fillEl.classList.remove('late');
+                labelEl.textContent = `${Math.floor(elapsed)}s — longer than usual`;
             } else {
-                fillEl.style.width = '100%';
-                if (ratio >= 2) {
-                    fillEl.classList.add('late');
-                    fillEl.classList.remove('over');
-                    labelEl.textContent = `${Math.floor(elapsed)}s — Claude is taking unusually long`;
-                } else {
-                    fillEl.classList.add('over');
-                    labelEl.textContent = `${Math.floor(elapsed)}s — longer than expected`;
-                }
+                fillEl.classList.add('late');
+                fillEl.classList.remove('over');
+                labelEl.textContent = `${Math.floor(elapsed)}s — Claude is taking unusually long`;
             }
         };
         tick();
@@ -251,8 +301,10 @@
             const resp = await M.api('suggest_decks', {}, { signal: suggestController.signal });
             clearTimeout(timeoutId);
             suggestController = null;
+            const elapsed = (Date.now() - loadingStartedAt) / 1000;
             stopLoading();
             if (resp && resp.ok) {
+                savePastTiming(elapsed);
                 const n = (resp.saved_ids || []).length;
                 statusEl.textContent = `Saved ${n} new deck${n === 1 ? '' : 's'} from ${resp.unique_cards} unique cards.`;
                 statusEl.style.color = '';

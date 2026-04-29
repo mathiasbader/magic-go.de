@@ -33,7 +33,7 @@ $today = date('Y-m-d');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Cards - Magic: The Gathering</title>
-    <link rel="icon" href="/img/favicon.png">
+    <link rel="icon" type="image/svg+xml" href="/img/favicon.svg"><link rel="icon" type="image/png" href="/img/favicon.png">
     <link rel="stylesheet" href="/cards/assets/cards.css">
 </head>
 <body>
@@ -109,6 +109,7 @@ $today = date('Y-m-d');
                     <div style="width:min(420px, 80%);">
                         <div class="progress-track"><div class="progress-fill" id="decks-progress-fill"></div></div>
                         <div id="decks-progress-label" style="font-size:0.75rem;color:var(--text-muted);margin-top:0.4rem;"></div>
+                        <div id="decks-progress-history"></div>
                         <button id="decks-cancel-btn" type="button" style="margin-top:0.75rem;background:transparent;color:var(--text-muted);border:1px solid var(--border);border-radius:6px;padding:0.35rem 0.9rem;font-size:0.75rem;cursor:pointer;font-family:inherit;">Cancel</button>
                     </div>
                 </div>
@@ -186,7 +187,7 @@ $today = date('Y-m-d');
                             </div>
                         </div>
                         <a href="<?= htmlspecialchars($set['wotc_url']) ?>" target="_blank" rel="noopener" class="set-preview">
-                            <img src="/img/<?= strtolower($set['code']) ?>.jpg"
+                            <img src="/img/sets/<?= strtolower($set['code']) ?>.jpg"
                                  alt="<?= htmlspecialchars($set['name']) ?> key art" loading="lazy"
                                  <?php if (!empty($set['image_pos'])): ?>style="object-position: <?= $set['image_pos'] ?>"<?php endif; ?>>
                         </a>

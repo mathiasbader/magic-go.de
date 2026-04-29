@@ -32,7 +32,7 @@ if (!empty($artist['bio'])) $details[] = $artist['bio'];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($artist['name']) ?> - Magic: The Gathering</title>
-    <link rel="icon" href="/img/favicon.png">
+    <link rel="icon" type="image/svg+xml" href="/img/favicon.svg"><link rel="icon" type="image/png" href="/img/favicon.png">
     <link rel="stylesheet" href="/cards/assets/artist.css">
 </head>
 <body>

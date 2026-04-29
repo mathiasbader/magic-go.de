@@ -402,6 +402,24 @@ header h1 { font-size: 1.5rem; font-weight: 700; }
 .progress-fill.late { background: var(--red); animation: progress-pulse 1.4s ease-in-out infinite; }
 @keyframes progress-pulse { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
 
+/* Reference bars showing the last few successful run durations. */
+#decks-progress-history { margin-top: 0.5rem; display: flex; flex-direction: column; gap: 4px; }
+.progress-history-row {
+    display: grid; grid-template-columns: 56px 1fr 36px;
+    align-items: center; gap: 6px;
+    font-size: 0.7rem; color: var(--text-muted);
+}
+.progress-history-label { text-align: right; }
+.progress-history-track {
+    height: 4px; background: rgba(148, 163, 184, 0.12);
+    border-radius: 999px; overflow: hidden;
+}
+.progress-history-fill {
+    height: 100%; background: rgba(56, 189, 248, 0.35);
+    border-radius: 999px;
+}
+.progress-history-value { text-align: left; }
+
 .deck-curve { display: flex; align-items: flex-end; gap: 3px; height: 40px; }
 .deck-curve .bar {
     flex: 1; background: var(--accent); border-radius: 2px 2px 0 0;

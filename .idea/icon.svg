@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <!--
+      A Magic: The Gathering card, simplified for favicon scale (16-32 px).
+      Layered to mimic the iconic card silhouette:
+        1. Outer black border (the card frame).
+        2. Inner brown card body (parchment / Magic card front).
+        3. Top title bar.
+        4. Art window in the upper-middle.
+        5. Type-line bar below the art.
+        6. Text box at the bottom with two faint rules.
+    -->
+    <!-- Outer frame -->
+    <rect x="22" y="6" width="56" height="88" rx="6" ry="6" fill="#0c0c0c"/>
+    <!-- Card body -->
+    <rect x="26" y="10" width="48" height="80" rx="3" ry="3" fill="#c9a974"/>
+    <!-- Title bar -->
+    <rect x="29" y="13" width="42" height="9" rx="1.5" ry="1.5" fill="#e7d6a8"/>
+    <!-- Art window -->
+    <rect x="29" y="24" width="42" height="28" fill="#1f3a5f"/>
+    <!-- Subtle "mountain" silhouette inside the art window -->
+    <polygon points="29,52 40,38 48,46 56,32 64,44 71,38 71,52" fill="#0e2240"/>
+    <!-- Sun/moon dot -->
+    <circle cx="62" cy="32" r="3" fill="#f8d97a"/>
+    <!-- Type line -->
+    <rect x="29" y="54" width="42" height="6" rx="1" ry="1" fill="#e7d6a8"/>
+    <!-- Text box -->
+    <rect x="29" y="62" width="42" height="22" rx="1" ry="1" fill="#f0e2b8"/>
+    <!-- Faint rules of body text -->
+    <rect x="32" y="66" width="36" height="2" fill="#a99566"/>
+    <rect x="32" y="71" width="30" height="2" fill="#a99566"/>
+    <rect x="32" y="76" width="33" height="2" fill="#a99566"/>
+</svg>
