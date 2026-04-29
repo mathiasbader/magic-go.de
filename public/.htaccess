@@ -1,0 +1,30 @@
+RewriteEngine On
+
+# Force www on non-local hosts (production-style)
+RewriteCond %{HTTP_HOST} !^www\. [NC]
+RewriteCond %{HTTP_HOST} !\.local$ [NC]
+RewriteCond %{HTTP_HOST} !\.ddev\.site$ [NC]
+RewriteRule .* http://www.%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+# /logout → /sal/logout.php
+RewriteRule ^logout$ /sal/logout.php [L]
+
+# Tab shortcuts (open the cards page on a specific tab)
+RewriteRule ^sets/?$ /cards/?tab=sets [L,QSA]
+RewriteRule ^artists/?$ /cards/?tab=artists [L,QSA]
+RewriteRule ^decks/?$ /cards/?tab=decks [L,QSA]
+
+# Deck detail page
+RewriteRule ^decks/([0-9]+)/?$ /cards/deck.php?id=$1 [L]
+
+# Cards subroutes
+RewriteRule ^cards/imports$ /cards/imports.php [L]
+RewriteRule ^cards/artists?/([0-9]+)/?$ /cards/artist.php?id=$1 [L]
+RewriteRule ^cards/([0-9]+)$ /cards/card.php?id=$1 [L]
+RewriteRule ^cards/([a-f0-9-]{36})$ /cards/card.php?id=$1 [L]
+
+# Image cache proxy
+RewriteRule ^img/cache$ /img/cache.php [L,QSA]
+
+# Scryfall API proxy (avoids CORS issues with self-signed certs)
+RewriteRule ^api/scryfall$ /api/scryfall.php [L,QSA]
