@@ -138,7 +138,7 @@ final class DeckService
     }
 
     /** @param array<string,mixed> $deck */
-    public function insertSuggested(int $userId, array $deck): int
+    public function insertSuggested(int $userId, array $deck, ?int $generationSeconds = null): int
     {
         $colors = strtoupper(preg_replace('/[^WUBRG]/i', '', (string)($deck['colors'] ?? '')));
 
@@ -153,9 +153,9 @@ final class DeckService
         $stmt = $this->pdo->prepare('
             INSERT INTO magic_decks
                 (user_id, name, colors, format, archetype, card_count, main_card,
-                 strategy, strengths, weaknesses, key_cards, missing_cards, mana_curve, cards, source)
+                 strategy, strengths, weaknesses, key_cards, missing_cards, mana_curve, cards, source, generation_seconds)
             VALUES (:uid, :name, :colors, :format, :archetype, :card_count, :main_card,
-                    :strategy, :strengths, :weaknesses, :key_cards, :missing_cards, :mana_curve, :cards, :source)
+                    :strategy, :strengths, :weaknesses, :key_cards, :missing_cards, :mana_curve, :cards, :source, :generation_seconds)
         ');
         $stmt->execute([
             'uid' => $userId,
@@ -173,8 +173,28 @@ final class DeckService
             'mana_curve' => json_encode(array_values(array_map('intval', (array)($deck['mana_curve'] ?? [])))),
             'cards' => json_encode($cardsList),
             'source' => 'ai_suggested',
+            'generation_seconds' => $generationSeconds,
         ]);
         return (int)$this->pdo->lastInsertId();
+    }
+
+    /**
+     * Recent generation-time samples for the user's last N AI-suggested decks,
+     * oldest first. Used by the loading screen's past-run reference bars.
+     *
+     * @return list<int>
+     */
+    public function recentRunSeconds(int $userId, int $limit = 3): array
+    {
+        $limit = max(1, min(20, $limit));
+        $stmt = $this->pdo->prepare(
+            'SELECT generation_seconds FROM magic_decks
+             WHERE user_id = :uid AND generation_seconds IS NOT NULL
+             ORDER BY id DESC LIMIT ' . $limit
+        );
+        $stmt->execute(['uid' => $userId]);
+        $rows = $stmt->fetchAll(\PDO::FETCH_COLUMN);
+        return array_reverse(array_map('intval', $rows));
     }
 
     /**

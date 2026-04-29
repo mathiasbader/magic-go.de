@@ -56,28 +56,18 @@
     // Default expectation for the FIRST run (before we have history). One deck
     // is much faster than the old multi-deck batch — calibrate accordingly.
     const ESTIMATED_LOADING_SECONDS = 45;
-    const PAST_TIMINGS_KEY = 'decksPastTimings';
-    const PAST_TIMINGS_MAX = 3;
 
     let decksLoaded = false;
     let loadingTimer = null;
     let progressTimer = null;
     let suggestController = null;
     let loadingStartedAt = 0;
+    /** @type {number[]} elapsed seconds of the last successful runs (per user), oldest first. */
+    let pastTimings = [];
 
-    /** @return {number[]} elapsed seconds of the last successful runs, oldest first */
-    function readPastTimings() {
-        try {
-            const v = JSON.parse(localStorage.getItem(PAST_TIMINGS_KEY) || '[]');
-            return Array.isArray(v) ? v.filter(n => typeof n === 'number' && n > 0).slice(-PAST_TIMINGS_MAX) : [];
-        } catch { return []; }
-    }
-
-    function savePastTiming(seconds) {
-        const past = readPastTimings();
-        past.push(Math.round(seconds));
-        const trimmed = past.slice(-PAST_TIMINGS_MAX);
-        try { localStorage.setItem(PAST_TIMINGS_KEY, JSON.stringify(trimmed)); } catch {}
+    async function refreshPastTimings() {
+        const resp = await M.api('list_recent_run_seconds');
+        pastTimings = (resp && Array.isArray(resp.seconds)) ? resp.seconds : [];
     }
 
     /**
@@ -226,7 +216,7 @@
 
         fillEl.classList.remove('over', 'late');
         fillEl.style.width = '0%';
-        const past = readPastTimings();
+        const past = pastTimings.slice();
         // Expected duration: max of the recent runs, or the static estimate when
         // no history exists yet.
         const expected = past.length ? Math.max(...past) : ESTIMATED_LOADING_SECONDS;
@@ -342,15 +332,13 @@
             const resp = await M.api('suggest_decks', {}, { signal: suggestController.signal });
             clearTimeout(timeoutId);
             suggestController = null;
-            const elapsed = (Date.now() - loadingStartedAt) / 1000;
             stopLoading();
             if (resp && resp.ok) {
-                savePastTiming(elapsed);
                 statusEl.textContent = resp.saved_id
                     ? `Saved 1 new deck from ${resp.unique_cards} unique cards.`
                     : `No deck was saved.`;
                 statusEl.style.color = '';
-                await loadDecks();
+                await Promise.all([loadDecks(), refreshPastTimings()]);
             } else if (resp && resp.cancelled) {
                 statusEl.style.color = 'var(--text-muted)';
                 statusEl.textContent = 'Cancelled.';
@@ -372,7 +360,10 @@
         load: () => {
             // Only load if the API key is set and the main view is visible.
             if (!M.hasClaudeKey) return;
-            if (!decksLoaded) loadDecks();
+            if (!decksLoaded) {
+                loadDecks();
+                refreshPastTimings();
+            }
         },
     };
 })();

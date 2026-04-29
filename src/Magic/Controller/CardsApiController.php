@@ -27,6 +27,7 @@ final class CardsApiController
     private const SAFE_ACTIONS = [
         'list', 'list_artists', 'list_batches', 'count_unassigned',
         'check_existing', 'list_binders', 'list_binder_cards', 'list_decks',
+        'list_recent_run_seconds',
     ];
 
     public function __construct(
@@ -164,6 +165,8 @@ final class CardsApiController
                 Json::send(['ok' => true, 'is_favorite' => $this->decks()->toggleFavorite($uid, (int)($input['id'] ?? 0))]);
             case 'suggest_decks':
                 $this->suggestDecks($uid);
+            case 'list_recent_run_seconds':
+                Json::send(['seconds' => $this->decks()->recentRunSeconds($uid)]);
 
             default:
                 Json::error('Unknown action');

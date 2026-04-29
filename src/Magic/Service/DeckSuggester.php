@@ -79,6 +79,7 @@ final class DeckSuggester
             ]],
         ];
 
+        $startedAt = microtime(true);
         $response = $this->claude->messages($payload);
         $text = ClaudeClient::extractText($response);
         $parsed = json_decode($text, true);
@@ -86,7 +87,8 @@ final class DeckSuggester
             throw new ClaudeApiException('Could not parse deck suggestion', 502, $text);
         }
 
-        $savedId = $this->decks->insertSuggested($userId, $parsed);
+        $elapsedSeconds = (int)round(microtime(true) - $startedAt);
+        $savedId = $this->decks->insertSuggested($userId, $parsed, $elapsedSeconds);
 
         return [
             'saved_id' => $savedId,
