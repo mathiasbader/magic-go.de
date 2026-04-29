@@ -88,15 +88,53 @@
         if (!el) return;
         if (!history.length) { el.innerHTML = ''; return; }
         // Newest first so the most recent run is closest to the live bar.
+        // Use "Last runs" (plural) on the first row when there's more than one,
+        // since the section as a whole is comparing multiple past runs.
+        const firstLabel = history.length > 1 ? 'Last runs' : 'Last run';
         el.innerHTML = history.slice().reverse().map((sec, i) => {
             const pct = Math.min(100, (sec / scale) * 100).toFixed(1);
-            const label = ['Last run', '2 ago', '3 ago'][i] || `${i + 1} ago`;
+            const label = i === 0 ? firstLabel : (['', '2 ago', '3 ago'][i] || `${i + 1} ago`);
             return `<div class="progress-history-row">
-                <div class="progress-history-label">${label}</div>
+                <div class="progress-history-header"><span>${label}</span><span>${sec}s</span></div>
                 <div class="progress-history-track"><div class="progress-history-fill" style="width:${pct}%;"></div></div>
-                <div class="progress-history-value">${sec}s</div>
             </div>`;
         }).join('');
+    }
+
+    /**
+     * Slot-machine style slogan transition: the new line slides in from below
+     * while the old line slides out the top. Markup is a fixed-height window
+     * with a vertically-translated reel inside; we append a row at the bottom,
+     * animate the reel up by one row, then drop the old row and reset.
+     */
+    function showSlogan(text) {
+        const wrap = document.getElementById('decks-loading-msg');
+        if (!wrap) return;
+        const reel = wrap.querySelector('.slogan-reel');
+        if (!reel) return;
+        const current = reel.lastElementChild;
+        // First call after stopLoading() resets the reel — just set text, no animation.
+        if (!current.textContent) {
+            current.textContent = text;
+            return;
+        }
+        const incoming = document.createElement('div');
+        incoming.className = 'slogan-row';
+        incoming.textContent = text;
+        reel.appendChild(incoming);
+        // Force a reflow so the browser sees the new layout before we transition.
+        void reel.offsetHeight;
+        reel.style.transform = 'translateY(-50%)';
+        const cleanup = () => {
+            reel.removeEventListener('transitionend', cleanup);
+            // Drop everything except the latest row, snap back to 0 with no transition.
+            while (reel.children.length > 1) reel.removeChild(reel.firstChild);
+            reel.style.transition = 'none';
+            reel.style.transform = 'translateY(0)';
+            void reel.offsetHeight;
+            reel.style.transition = '';
+        };
+        reel.addEventListener('transitionend', cleanup, { once: true });
     }
 
     function renderManaPips(colors) {
@@ -162,6 +200,10 @@
         document.getElementById('decks-empty-msg').style.display = 'none';
         loadingEl.style.display = 'flex';
 
+        // Reset the slogan reel to a single empty row so the first showSlogan()
+        // call sets text without animating from a stale previous run.
+        msgEl.innerHTML = '<div class="slogan-reel"><div class="slogan-row"></div></div>';
+
         // Pick a fresh random subset (Fisher-Yates), then alternate within it.
         const idx = LOADING_MESSAGES.map((_, i) => i);
         for (let i = idx.length - 1; i > 0; i--) {
@@ -174,9 +216,7 @@
         const next = () => {
             if (pool.length === 0) pool = subset.slice();
             const i = Math.floor(Math.random() * pool.length);
-            const msg = pool.splice(i, 1)[0];
-            msgEl.style.opacity = '0';
-            setTimeout(() => { msgEl.textContent = msg; msgEl.style.opacity = '1'; }, 200);
+            showSlogan(pool.splice(i, 1)[0]);
         };
         next();
         loadingTimer = setInterval(next, 12000);

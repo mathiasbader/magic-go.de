@@ -388,7 +388,16 @@ header h1 { font-size: 1.5rem; font-weight: 700; }
 }
 @keyframes pw-spin { to { transform: rotate(360deg); } }
 @keyframes pw-pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
-#decks-loading-msg { transition: opacity 0.3s; }
+/* Slot-machine slogan window — fixed-height clip with a vertically-scrolling
+   reel inside. The JS appends a row, animates translateY to -50%, then drops
+   the old row and resets. */
+.slogan-window {
+    height: 1.6rem; overflow: hidden;
+    font-size: 1.1rem; font-weight: 500; color: var(--text);
+    text-align: center;
+}
+.slogan-reel { transition: transform 1.65s cubic-bezier(0.4, 0, 0.2, 1); }
+.slogan-row { height: 1.6rem; line-height: 1.6rem; }
 
 .progress-track {
     width: 100%; height: 8px; background: var(--surface);
@@ -402,23 +411,23 @@ header h1 { font-size: 1.5rem; font-weight: 700; }
 .progress-fill.late { background: var(--red); animation: progress-pulse 1.4s ease-in-out infinite; }
 @keyframes progress-pulse { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
 
-/* Reference bars showing the last few successful run durations. */
-#decks-progress-history { margin-top: 0.5rem; display: flex; flex-direction: column; gap: 4px; }
+/* Reference bars showing the last few successful run durations. Each row
+   stacks (label + seconds row above, full-width bar below) so the past-run
+   bars are exactly as wide as the live progress bar — directly comparable. */
+#decks-progress-history { margin-top: 0.6rem; display: flex; flex-direction: column; gap: 8px; }
 .progress-history-row {
-    display: grid; grid-template-columns: 56px 1fr 36px;
-    align-items: center; gap: 6px;
+    display: flex; flex-direction: column; gap: 3px;
     font-size: 0.7rem; color: var(--text-muted);
 }
-.progress-history-label { text-align: right; }
+.progress-history-header { display: flex; justify-content: space-between; }
 .progress-history-track {
-    height: 4px; background: rgba(148, 163, 184, 0.12);
+    width: 100%; height: 4px; background: rgba(148, 163, 184, 0.12);
     border-radius: 999px; overflow: hidden;
 }
 .progress-history-fill {
     height: 100%; background: rgba(56, 189, 248, 0.35);
     border-radius: 999px;
 }
-.progress-history-value { text-align: left; }
 
 .deck-curve { display: flex; align-items: flex-end; gap: 3px; height: 40px; }
 .deck-curve .bar {

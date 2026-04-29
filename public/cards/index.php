@@ -105,7 +105,7 @@ $today = date('Y-m-d');
                 </div>
                 <div id="decks-loading" style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;padding:4rem 1rem;text-align:center;">
                     <div class="planeswalker-spinner"></div>
-                    <div id="decks-loading-msg" style="font-size:1.1rem;color:var(--text);font-weight:500;min-height:1.6rem;"></div>
+                    <div id="decks-loading-msg" class="slogan-window"><div class="slogan-reel"><div class="slogan-row"></div></div></div>
                     <div style="width:min(420px, 80%);">
                         <div class="progress-track"><div class="progress-fill" id="decks-progress-fill"></div></div>
                         <div id="decks-progress-label" style="font-size:0.75rem;color:var(--text-muted);margin-top:0.4rem;"></div>
