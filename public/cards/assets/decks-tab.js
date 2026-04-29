@@ -53,7 +53,9 @@
         'Sleeving rares in premium sleeves...', 'Hoping you drew the basic land...',
     ];
     const LOADING_SUBSET_SIZE = 12;
-    const ESTIMATED_LOADING_SECONDS = 90;
+    // Default expectation for the FIRST run (before we have history). One deck
+    // is much faster than the old multi-deck batch — calibrate accordingly.
+    const ESTIMATED_LOADING_SECONDS = 45;
     const PAST_TIMINGS_KEY = 'decksPastTimings';
     const PAST_TIMINGS_MAX = 3;
 
@@ -344,8 +346,9 @@
             stopLoading();
             if (resp && resp.ok) {
                 savePastTiming(elapsed);
-                const n = (resp.saved_ids || []).length;
-                statusEl.textContent = `Saved ${n} new deck${n === 1 ? '' : 's'} from ${resp.unique_cards} unique cards.`;
+                statusEl.textContent = resp.saved_id
+                    ? `Saved 1 new deck from ${resp.unique_cards} unique cards.`
+                    : `No deck was saved.`;
                 statusEl.style.color = '';
                 await loadDecks();
             } else if (resp && resp.cancelled) {

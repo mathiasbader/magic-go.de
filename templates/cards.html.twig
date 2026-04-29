@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Cards - Magic: The Gathering</title>
+    <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
+    <link rel="icon" type="image/png" href="/img/favicon.png">
+    <link rel="stylesheet" href="/cards/assets/cards.css">
+</head>
+<body>
+    <div class="container">
+        <div class="page-tabs">
+            {% for t in [{id: 'cards', label: 'My Cards'}, {id: 'decks', label: 'My Decks'}, {id: 'artists', label: 'Artists'}, {id: 'sets', label: 'Sets'}] %}
+                <button class="page-tab{{ initial_tab == t.id ? ' active' : '' }}" data-tab="{{ t.id }}">{{ t.label }}</button>
+            {% endfor %}
+        </div>
+
+        {# ============================ Cards tab ============================ #}
+        <div class="tab-panel{{ initial_tab == 'cards' ? ' active' : '' }}" id="tab-cards">
+            <div class="search-section">
+                <div class="search-bar">
+                    <input type="text" id="search-input" placeholder="Search cards on Scryfall..." autocomplete="off">
+                    <a href="/cards/imports" class="import-btn" style="text-decoration:none;text-align:center;">Imports</a>
+                </div>
+                <div class="search-results" id="search-results"></div>
+            </div>
+
+            <div class="collection-bar">
+                <input type="text" id="filter-input" placeholder="Filter collection...">
+                <select id="binder-select" style="display:none;"><option value="">All binders</option></select>
+                <span class="collection-stats" id="collection-stats"></span>
+            </div>
+            <div class="set-filters">
+                <select id="set-filter-select" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:0.4rem 0.6rem;font-size:0.85rem;color:var(--text);outline:none;font-family:inherit;">
+                    <option value="">All sets</option>
+                </select>
+                <span id="lang-filters" style="display:contents;"></span>
+                <span id="rarity-filters" style="display:contents;"></span>
+                <span id="foil-filters" style="display:contents;"></span>
+            </div>
+
+            <div class="sort-bar">
+                <span class="sort-label">Sort:</span>
+                <button class="sort-btn" data-sort="name">Name <span class="sort-arrow">&uarr;</span></button>
+                <button class="sort-btn active" data-sort="price">Price <span class="sort-arrow">&darr;</span></button>
+                <button class="sort-btn" data-sort="set">Set <span class="sort-arrow">&uarr;</span></button>
+                <button class="sort-btn" data-sort="copies">Copies <span class="sort-arrow">&darr;</span></button>
+            </div>
+
+            <div id="card-grid" class="card-grid"></div>
+            <div id="empty-state" class="empty-state" style="display:none;">
+                <p>No cards in your collection yet.</p>
+                <p>Search for cards above or import from a file.</p>
+                <a href="/cards/imports" style="display:inline-block;margin-top:0.75rem;background:var(--accent);color:var(--bg);border-radius:8px;padding:0.5rem 1.2rem;font-weight:600;text-decoration:none;font-size:0.9rem;">Import cards from file</a>
+            </div>
+        </div>
+
+        {# ============================ Decks tab ============================ #}
+        <div class="tab-panel{{ initial_tab == 'decks' ? ' active' : '' }}" id="tab-decks">
+            <div id="decks-api-key-form" style="{{ has_claude_key ? 'display:none;' : '' }}max-width:480px;margin:2rem auto;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem;">
+                <h2 style="font-size:1rem;margin:0 0 0.5rem;color:var(--text);">Claude API key required</h2>
+                <p style="font-size:0.85rem;color:var(--text-muted);margin:0 0 1rem;line-height:1.5;">This module needs a Claude API key to generate decks. Paste yours below — it's stored only against your account.</p>
+                <form id="claude-key-form" style="display:flex;flex-direction:column;gap:0.75rem;">
+                    <input type="password" id="claude-key-input" placeholder="sk-ant-..." autocomplete="off" required style="background:var(--surface-alt);border:1px solid var(--border);border-radius:6px;padding:0.5rem 0.7rem;font-size:0.85rem;color:var(--text);outline:none;font-family:inherit;">
+                    <div style="display:flex;gap:0.75rem;align-items:center;">
+                        <button type="submit" style="background:var(--accent);color:var(--bg);border:none;border-radius:6px;padding:0.5rem 1rem;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">Save key</button>
+                        <a href="#" id="claude-key-cancel" style="display:{{ has_claude_key ? 'inline' : 'none' }};color:var(--text-muted);font-size:0.8rem;text-decoration:none;border-bottom:1px dotted var(--border);">Cancel</a>
+                    </div>
+                    <span id="claude-key-error" style="display:none;color:var(--red);font-size:0.8rem;"></span>
+                </form>
+            </div>
+            <div id="decks-main" style="{{ has_claude_key ? '' : 'display:none;' }}max-width:1100px;margin:1.5rem auto;">
+                <div id="decks-toolbar" style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;margin-bottom:1rem;">
+                    <button id="suggest-decks-btn" style="background:var(--accent);color:var(--bg);border:none;border-radius:8px;padding:0.55rem 1.1rem;font-size:0.9rem;font-weight:600;cursor:pointer;font-family:inherit;">Suggest a new deck</button>
+                    <span id="suggest-decks-status" style="color:var(--text-muted);font-size:0.8rem;"></span>
+                    <a href="#" id="claude-key-update" style="margin-left:auto;color:var(--text-muted);font-size:0.75rem;text-decoration:none;border-bottom:1px dotted var(--border);">Update API key</a>
+                </div>
+                <div id="decks-loading" style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;padding:4rem 1rem;text-align:center;">
+                    <div class="planeswalker-spinner"></div>
+                    <div id="decks-loading-msg" class="slogan-window"><div class="slogan-reel"><div class="slogan-row"></div></div></div>
+                    <div style="width:min(420px, 80%);">
+                        <div class="progress-track"><div class="progress-fill" id="decks-progress-fill"></div></div>
+                        <div id="decks-progress-label" style="font-size:0.75rem;color:var(--text-muted);margin-top:0.4rem;"></div>
+                        <div id="decks-progress-history"></div>
+                        <button id="decks-cancel-btn" type="button" style="margin-top:0.75rem;background:transparent;color:var(--text-muted);border:1px solid var(--border);border-radius:6px;padding:0.35rem 0.9rem;font-size:0.75rem;cursor:pointer;font-family:inherit;">Cancel</button>
+                    </div>
+                </div>
+                <div id="decks-list" class="decks-list"></div>
+                <div id="decks-empty-msg" style="display:none;text-align:center;color:var(--text-muted);margin:3rem auto;font-size:0.9rem;">No decks yet. Click <b>Suggest a new deck</b> to generate one from your collection.</div>
+            </div>
+        </div>
+
+        {# ============================ Artists tab ============================ #}
+        <div class="tab-panel{{ initial_tab == 'artists' ? ' active' : '' }}" id="tab-artists">
+            <div class="artist-wrapper">
+                <div style="margin-bottom:0;display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+                    <input type="text" id="artist-filter-input" placeholder="Filter artists..." style="flex:1;min-width:150px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:0.4rem 0.6rem;font-size:0.85rem;color:var(--text);outline:none;font-family:inherit;">
+                    <select id="artist-country-filter" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:0.4rem 0.5rem;font-size:0.85rem;color:var(--text);outline:none;font-family:inherit;"><option value="">All countries</option></select>
+                    <select id="artist-lang-filter" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:0.4rem 0.5rem;font-size:0.85rem;color:var(--text);outline:none;font-family:inherit;"><option value="">All languages</option></select>
+                    <span class="sort-label">Sort:</span>
+                    <button class="sort-btn active" data-artist-sort="name">Name <span class="sort-arrow">&uarr;</span></button>
+                    <button class="sort-btn" data-artist-sort="designs">Designs <span class="sort-arrow">&darr;</span></button>
+                </div>
+                <div id="artist-list" class="artist-list"></div>
+            </div>
+            <div id="artist-orphans" style="display:none;text-align:center;margin-top:1.5rem;font-size:0.8rem;color:var(--text-muted);"></div>
+            <div style="text-align:center;margin-top:0.75rem;"><a href="/cards/enrich_artists.php" style="color:var(--text-muted);font-size:0.75rem;text-decoration:none;border-bottom:1px dotted var(--border);">Enrich artists from mtg.wiki</a></div>
+        </div>
+
+        {# ============================ Sets tab ============================ #}
+        <div class="tab-panel{{ initial_tab == 'sets' ? ' active' : '' }}" id="tab-sets">
+            <div class="sets-container">
+                <div class="year-tabs">
+                    {% for year in all_sets|keys %}
+                        <button class="year-tab" data-year="{{ year }}">{{ year }}</button>
+                    {% endfor %}
+                </div>
+
+                {% for year, sets in all_sets %}
+                    <div class="year-panel" data-year="{{ year }}">
+                        <div class="sets-legend">
+                            <button class="sets-filter-btn" data-filter="original" type="button"><span class="dot dot-original"></span> Magic Original</button>
+                            <button class="sets-filter-btn" data-filter="ub" type="button"><span class="dot dot-ub"></span> Beyond</button>
+                            <button class="sets-filter-btn" data-filter="released" type="button"><span class="dot dot-released"></span> Released</button>
+                            <button class="sets-filter-btn" data-filter="upcoming" type="button"><span class="dot dot-upcoming"></span> Upcoming</button>
+                        </div>
+
+                        {% for idx, set in sets %}
+                            {% set released = set.date <= today %}
+                            {% set isUB = set.universe == 'Universes Beyond' %}
+                            <div class="set-card{{ released ? '' : ' set-card-upcoming' }}" data-universe="{{ isUB ? 'ub' : 'original' }}" data-status="{{ released ? 'released' : 'upcoming' }}">
+                                <a href="{{ set.wotc_url }}" target="_blank" rel="noopener" class="set-icon">
+                                    <img src="/img/cache?url={{ ('https://svgs.scryfall.io/sets/' ~ set.code|lower ~ '.svg')|url_encode }}" alt="{{ set.code }}"
+                                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                                    <div class="set-fallback-icon" style="display:none;">&#127183;</div>
+                                </a>
+                                <div class="set-body">
+                                    <span class="set-number">{{ year }}-{{ idx + 1 }}</span>
+                                    <div class="set-header">
+                                        <a href="{{ set.wotc_url }}" target="_blank" rel="noopener" class="set-name">{{ set.name }}</a>
+                                        <span class="set-code">{{ set.code }}</span>
+                                        <span class="badge {{ isUB ? 'badge-ub' : 'badge-original' }}">{{ isUB ? 'Beyond' : 'Original' }}</span>
+                                        {% if not released %}<span class="badge badge-upcoming">Upcoming</span>{% endif %}
+                                    </div>
+                                    <div class="set-meta">
+                                        <span>&#128197; {{ set.date|date('M j, Y') }}</span>
+                                        {% if set.cards %}<span>&#127183; {{ set.cards }} cards</span>{% endif %}
+                                        {% if set.commander_code %}<span>Commander: {{ set.commander_code }}</span>{% endif %}
+                                    </div>
+                                    <div class="set-desc">{{ set.description }}</div>
+                                    <div class="set-formats">
+                                        {% for f in set.formats %}<span class="format-tag">{{ f }}</span>{% endfor %}
+                                    </div>
+                                    <div class="set-links">
+                                        <a href="{{ set.scryfall_url }}" target="_blank" rel="noopener">Scryfall</a>
+                                        <a href="{{ set.wiki_url }}" target="_blank" rel="noopener">MTG Wiki</a>
+                                        <a href="{{ set.goldfish_url }}" target="_blank" rel="noopener">MTG Goldfish</a>
+                                    </div>
+                                </div>
+                                <a href="{{ set.wotc_url }}" target="_blank" rel="noopener" class="set-preview">
+                                    <img src="/img/sets/{{ set.code|lower }}.jpg"
+                                         alt="{{ set.name }} key art" loading="lazy"
+                                         {%- if set.image_pos|default('') %} style="object-position: {{ set.image_pos }}"{% endif %}>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+
+                <div class="sets-note">All Beyond sets are Standard-legal starting 2025. Set icons from Scryfall.</div>
+            </div>
+        </div>
+    </div>
+    <div class="toast" id="toast"></div>
+
+    <script>
+        window.MAGIC = {
+            csrf: {{ csrf|json_encode|raw }},
+            hasClaudeKey: {{ has_claude_key ? 'true' : 'false' }},
+            initialTab: {{ initial_tab|json_encode|raw }},
+            setsLatestYear: {{ sets_latest_year|json_encode|raw }},
+        };
+    </script>
+    <script src="/cards/assets/core.js"></script>
+    <script src="/cards/assets/cards-tab.js"></script>
+    <script src="/cards/assets/artists-tab.js"></script>
+    <script src="/cards/assets/sets-tab.js"></script>
+    <script src="/cards/assets/decks-tab.js"></script>
+</body>
+</html>
