@@ -19,7 +19,9 @@ and AI-suggested decks built from your collection.
     hardening (uses `CURLSSLOPT_NATIVE_CA`, validates content-type and magic
     bytes before caching).
   - `api/scryfall.php` — server-side Scryfall API proxy.
-  - `sal/` — login + logout.
+  - `index.php` doubles as the login form when the user isn't authenticated;
+    once logged in it redirects to `/cards/`.
+  - `logout.php` clears the auth cookie and redirects home.
 
 ## Setup
 

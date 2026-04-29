@@ -6,8 +6,8 @@ RewriteCond %{HTTP_HOST} !\.local$ [NC]
 RewriteCond %{HTTP_HOST} !\.ddev\.site$ [NC]
 RewriteRule .* http://www.%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 
-# /logout → /sal/logout.php
-RewriteRule ^logout$ /sal/logout.php [L]
+# /logout → /logout.php
+RewriteRule ^logout$ /logout.php [L]
 
 # Tab shortcuts (open the cards page on a specific tab)
 RewriteRule ^sets/?$ /cards/?tab=sets [L,QSA]
