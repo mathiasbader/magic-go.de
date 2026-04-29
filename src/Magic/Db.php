@@ -15,6 +15,7 @@ final class Db
     {
         if (self::$pdo !== null) return self::$pdo;
         $svc = new \DbService();
+        $svc->assertSchemaInitialized();
         $svc->runMigrations();
         self::$pdo = $svc->getConnection();
         return self::$pdo;

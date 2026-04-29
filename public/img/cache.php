@@ -39,6 +39,23 @@ if (file_exists($cachePath)) {
     exit;
 }
 
+// Throttle: Scryfall asks for 50–100 ms between requests. Without this,
+// a deck page with dozens of cards triggers 429s and broken-image icons.
+// Serialize all PHP-FPM workers via a shared lock file in the cache dir.
+if (!is_dir($cacheDir)) mkdir($cacheDir, 0755, true);
+$throttleFp = fopen($cacheDir . '/.scryfall_throttle', 'c+');
+if ($throttleFp) {
+    flock($throttleFp, LOCK_EX);
+    $last = (float)stream_get_contents($throttleFp);
+    $waitUs = 110_000 - (int)((microtime(true) - $last) * 1_000_000);
+    if ($waitUs > 0 && $waitUs < 5_000_000) usleep($waitUs);
+    rewind($throttleFp);
+    ftruncate($throttleFp, 0);
+    fwrite($throttleFp, (string)microtime(true));
+    flock($throttleFp, LOCK_UN);
+    fclose($throttleFp);
+}
+
 // Download from Scryfall
 $ch = curl_init($url);
 $opts = [

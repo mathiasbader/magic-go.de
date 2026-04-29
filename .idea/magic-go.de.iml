@@ -2,6 +2,8 @@
 <module type="WEB_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/spec" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/Magic" isTestSource="false" packagePrefix="Magic\" />
       <excludeFolder url="file://$MODULE_DIR$/public/img/card_cache" />
       <excludeFolder url="file://$MODULE_DIR$/public/img/card_cache/02" />
       <excludeFolder url="file://$MODULE_DIR$/public/img/card_cache/08" />

@@ -3,6 +3,20 @@
 A personal Magic: The Gathering collection manager. Tracks owned cards, artists,
 and AI-suggested decks built from your collection.
 
+## Local development
+
+```
+ddev start
+```
+
+Then open https://magic-go.local or https://www.magic-go.local.
+
+## Configuration
+
+Copy `config/db_example.php` to `config/db.php` (or `config/db_prod.php` for
+production) and fill in the database credentials. The DDEV setup uses
+`config/db_ddev.php`.
+
 ## Architecture
 
 - **`composer.json`** — declares the autoload mappings (`Magic\` → `src/Magic/`,

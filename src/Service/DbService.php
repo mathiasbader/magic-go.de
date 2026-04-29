@@ -13,7 +13,7 @@ class DbService
             $this->pdo = new PDO($dsn, $config['username'], $config['password'], [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
+                Pdo\Mysql::ATTR_USE_BUFFERED_QUERY => true,
             ]);
         } catch (\PDOException $e) {
             http_response_code(503);
@@ -25,6 +25,18 @@ class DbService
     public function getConnection(): PDO
     {
         return $this->pdo;
+    }
+
+    public function assertSchemaInitialized(): void
+    {
+        try {
+            $this->pdo->query('SELECT 1 FROM users LIMIT 1')->closeCursor();
+        } catch (\PDOException $e) {
+            if ($e->getCode() !== '42S02') throw $e;
+            http_response_code(503);
+            echo '<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Datenbank nicht initialisiert</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:"Segoe UI",system-ui,-apple-system,sans-serif;background:#0f172a;color:#e2e8f0;display:flex;align-items:center;justify-content:center;min-height:100vh}.box{background:#1e293b;border:1px solid #475569;border-radius:12px;padding:2rem;width:380px;max-width:90vw;text-align:center}.icon{margin:0 auto 1.25rem}h1{font-size:1.1rem;margin-bottom:.75rem;color:#fbbf24}p{font-size:.88rem;color:#94a3b8;line-height:1.5}.retry{display:inline-block;margin-top:1.25rem;background:#334155;color:#e2e8f0;border:1px solid #475569;border-radius:8px;padding:.5rem 1.2rem;font-size:.85rem;font-weight:600;cursor:pointer;text-decoration:none;font-family:inherit;transition:background .12s}.retry:hover{background:#475569}</style></head><body><div class="box"><div class="icon"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg></div><h1>Datenbank nicht initialisiert</h1><p>Die Datenbank ist leer. Bitte importiere den Schema-Dump (z.&nbsp;B. mit <code>ddev import-db</code>) und versuche es erneut.</p><a href="" class="retry">Erneut versuchen</a></div></body></html>';
+            exit;
+        }
     }
 
     public function runMigrations(): void
