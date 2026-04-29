@@ -5,8 +5,12 @@ and AI-suggested decks built from your collection.
 
 ## Architecture
 
-- **`src/Magic/`** — domain code under the `Magic\` namespace, autoloaded via
-  `Magic\Bootstrap::init()`.
+- **`composer.json`** — declares the autoload mappings (`Magic\` → `src/Magic/`,
+  classmap for `src/Service/`). Run `composer install` to generate `vendor/`.
+- **`src/Magic/`** — domain code under the `Magic\` namespace, autoloaded by
+  Composer's PSR-4. Entry points start with
+  `require_once __DIR__ . '/.../vendor/autoload.php';` followed by
+  `use Magic\Bootstrap; $boot = Bootstrap::init();`.
 - **`src/Service/`** — `DbService` (PDO + migration runner) and `AuthService`
   (cookie-based login).
 - **`migrations/`** — sequential numbered SQL files, applied on every request

@@ -1,0 +1,20 @@
+{
+    "name": "mathiasbader/magic-go",
+    "description": "Magic: The Gathering collection manager",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "php": ">=8.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Magic\\": "src/Magic/"
+        },
+        "classmap": [
+            "src/Service/"
+        ]
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

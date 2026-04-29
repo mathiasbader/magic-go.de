@@ -4,7 +4,7 @@
  * Run via browser: /cards/enrich_artists.php
  * Safe to re-run — only updates artists with empty fields.
  */
-require_once __DIR__ . '/../../src/Magic/Bootstrap.php';
+require_once __DIR__ . '/../../vendor/autoload.php';
 
 use Magic\Bootstrap;
 use Magic\Service\ArtistService;

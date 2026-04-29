@@ -91,6 +91,7 @@
       <excludeFolder url="file://$MODULE_DIR$/public/img/card_cache/f6" />
       <excludeFolder url="file://$MODULE_DIR$/public/img/card_cache/fb" />
       <excludeFolder url="file://$MODULE_DIR$/public/img/card_cache/fc" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

@@ -1,6 +1,5 @@
 <?php
-require_once __DIR__ . '/../src/Magic/Bootstrap.php';
-require_once __DIR__ . '/../src/Service/AuthService.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 use Magic\Bootstrap;
 

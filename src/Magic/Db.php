@@ -3,10 +3,9 @@
 namespace Magic;
 
 /**
- * Thin facade over the host site's DbService.
- *
- * Future extraction: replace the require_once with the magic project's own
- * DbService (or any PDO factory) — every Magic class only ever asks Db::connect().
+ * Thin facade in front of the legacy global-namespace DbService — keeps the
+ * domain layer's call site simple (`Db::connect()`) and gives us one place
+ * to swap PDO factories later if we ever do.
  */
 final class Db
 {
@@ -15,8 +14,6 @@ final class Db
     public static function connect(): \PDO
     {
         if (self::$pdo !== null) return self::$pdo;
-
-        require_once __DIR__ . '/../Service/DbService.php';
         $svc = new \DbService();
         $svc->runMigrations();
         self::$pdo = $svc->getConnection();

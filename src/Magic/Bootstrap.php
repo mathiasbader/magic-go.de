@@ -5,34 +5,16 @@ namespace Magic;
 /**
  * Single bootstrap entry for the Magic module.
  *
- * Registers a PSR-4 autoloader for the Magic\ namespace and constructs the
- * shared services (PDO + authenticated user) used by every entry point.
- *
- * The Magic module is designed to live as a self-contained subtree under
- * src/Magic/ so it can be extracted into its own project later. The only
- * external dependency today is on the host site's DbService + AuthService,
- * which are wrapped behind Magic\Db and Magic\Auth so the seam is small.
+ * Constructs the shared services (PDO + authenticated user) used by every
+ * entry point. Class loading is handled by Composer's PSR-4 autoloader —
+ * entry points must `require __DIR__ . '/.../vendor/autoload.php'` before
+ * calling Bootstrap::init().
  */
 final class Bootstrap
 {
-    private static bool $autoloaderRegistered = false;
-
     public static function init(): self
     {
-        self::registerAutoloader();
         return new self();
-    }
-
-    private static function registerAutoloader(): void
-    {
-        if (self::$autoloaderRegistered) return;
-        spl_autoload_register(static function (string $class): void {
-            if (strncmp($class, 'Magic\\', 6) !== 0) return;
-            $relative = str_replace('\\', DIRECTORY_SEPARATOR, substr($class, 6));
-            $path = __DIR__ . DIRECTORY_SEPARATOR . $relative . '.php';
-            if (is_file($path)) require $path;
-        });
-        self::$autoloaderRegistered = true;
     }
 
     private ?\PDO $pdo = null;

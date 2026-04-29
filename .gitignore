@@ -2,3 +2,4 @@ config/db.php
 config/db_*.php
 !config/db_example.php
 public/img/card_cache/*
+/vendor/

@@ -3,17 +3,13 @@
 namespace Magic;
 
 /**
- * Thin facade over the host site's AuthService.
- *
- * Future extraction: drop in the magic project's own auth here. Every Magic
- * class reads the current user via Auth::current().
+ * Thin facade in front of the legacy global-namespace AuthService — keeps the
+ * domain layer's call site simple (`Auth::current($pdo)`).
  */
 final class Auth
 {
     public static function current(\PDO $pdo): ?array
     {
-        require_once __DIR__ . '/../Service/AuthService.php';
-        $svc = new \AuthService($pdo);
-        return $svc->getAuthenticatedUser();
+        return (new \AuthService($pdo))->getAuthenticatedUser();
     }
 }
