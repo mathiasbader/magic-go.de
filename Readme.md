@@ -23,17 +23,6 @@ and AI-suggested decks built from your collection.
     once logged in it redirects to `/cards/`.
   - `logout.php` clears the auth cookie and redirects home.
 
-## Setup
-
-1. **Apache vhost** — add a stanza to `httpd-vhosts.conf` pointing
-   `magic-go.local` (or whatever you want to call it locally) at `public/`.
-2. **Database** — `config/db.php` defaults to the existing `mathiasbader.de`
-   MySQL database, so all data carries over. To use a fresh DB, copy
-   `config/db_example.php` over `config/db.php` and update credentials.
-3. **Migrations** — run automatically on each request via
-   `DbService::runMigrations()`. On the shared DB they're tracked by filename
-   in the existing `migrations` table, so already-applied ones are skipped.
-
 ## URLs
 
 | Path                      | Renders                                    |

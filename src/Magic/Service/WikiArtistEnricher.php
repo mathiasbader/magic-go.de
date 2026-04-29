@@ -9,9 +9,9 @@ namespace Magic\Service;
  */
 final class WikiArtistEnricher
 {
-    private const ENDPOINT = 'https://mtg.wiki/api.php';
-    private const USER_AGENT = 'MathiasBaderMTGCollection/1.0';
-    private const TIMEOUT_SECONDS = 10;
+    private const string ENDPOINT = 'https://mtg.wiki/api.php';
+    private const string USER_AGENT = 'MathiasBaderMTGCollection/1.0';
+    private const int TIMEOUT_SECONDS = 10;
 
     /**
      * Looks up a single artist. Returns one of:
