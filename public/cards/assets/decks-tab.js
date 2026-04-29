@@ -87,18 +87,19 @@
         const el = document.getElementById('decks-progress-history');
         if (!el) return;
         if (!history.length) { el.innerHTML = ''; return; }
-        // Newest first so the most recent run is closest to the live bar.
-        // Use "Last runs" (plural) on the first row when there's more than one,
-        // since the section as a whole is comparing multiple past runs.
-        const firstLabel = history.length > 1 ? 'Last runs' : 'Last run';
-        el.innerHTML = history.slice().reverse().map((sec, i) => {
+        // One header for the whole section, then a stack of bars (newest first
+        // so the most recent run is closest to the live bar). Each row is just
+        // the bar + seconds — no per-row label, since the rows below the header
+        // are implicitly "next-most-recent ... oldest".
+        const header = history.length > 1 ? 'Last runs' : 'Last run';
+        const rows = history.slice().reverse().map(sec => {
             const pct = Math.min(100, (sec / scale) * 100).toFixed(1);
-            const label = i === 0 ? firstLabel : (['', '2 ago', '3 ago'][i] || `${i + 1} ago`);
             return `<div class="progress-history-row">
-                <div class="progress-history-header"><span>${label}</span><span>${sec}s</span></div>
                 <div class="progress-history-track"><div class="progress-history-fill" style="width:${pct}%;"></div></div>
+                <div class="progress-history-value">${sec}s</div>
             </div>`;
         }).join('');
+        el.innerHTML = `<div class="progress-history-header">${header}</div>${rows}`;
     }
 
     /**
@@ -239,9 +240,7 @@
             const ratio = elapsed / expected;
             fillEl.style.width = Math.min(100, (elapsed / scale) * 100).toFixed(1) + '%';
             if (ratio < 1) {
-                labelEl.textContent = past.length
-                    ? `${Math.floor(elapsed)}s / ~${expected}s (longest past run)`
-                    : `${Math.floor(elapsed)}s / ~${expected}s`;
+                labelEl.textContent = `${Math.floor(elapsed)}s`;
                 fillEl.classList.remove('over', 'late');
             } else if (ratio < 2) {
                 fillEl.classList.add('over');
