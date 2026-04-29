@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../../src/Magic/Bootstrap.php';
+require_once __DIR__ . '/../../src/Magic/Bootstrap.php';
 
 use Magic\Bootstrap;
 use Magic\Http\Csrf;

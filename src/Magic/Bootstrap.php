@@ -61,7 +61,7 @@ final class Bootstrap
      * Redirects to login if the user is unauthenticated. Returns the user array.
      * @return array{id:int,...}
      */
-    public function requireUser(string $loginUrl = '/sal/'): array
+    public function requireUser(string $loginUrl = '/'): array
     {
         $u = $this->user();
         if (!$u) {
