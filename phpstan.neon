@@ -1,0 +1,11 @@
+parameters:
+    # Level 6 mostly adds "specify the value type of every array" — noisy on a
+    # codebase where most arrays are PDO fetch_assoc rows. Level 5 still catches
+    # wrong types, dead code, null derefs, and strict-comparison bugs.
+    level: 5
+    paths:
+        - src
+        - public
+    excludePaths:
+        - public/img/card_cache
+        - vendor

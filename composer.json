@@ -6,6 +6,12 @@
     "require": {
         "php": ">=8.2"
     },
+    "require-dev": {
+        "phpstan/phpstan": "^2.1"
+    },
+    "scripts": {
+        "stan": "phpstan analyse"
+    },
     "autoload": {
         "psr-4": {
             "Magic\\": "src/Magic/"

@@ -22,7 +22,7 @@ $hasClaudeApiKey = (new UserSettingsService($pdo))->has((int)$user['id'], 'claud
 
 // Sets data — pre-rendered server-side because the per-set markup is large
 // and the data is fully known at request time.
-require_once __DIR__ . '/../sets_data.php';
+$allSets = require __DIR__ . '/../sets_data.php';
 $setsYears = array_keys($allSets);
 $setsLatestYear = max($setsYears);
 $today = date('Y-m-d');

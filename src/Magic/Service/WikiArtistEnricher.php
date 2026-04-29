@@ -91,7 +91,7 @@ final class WikiArtistEnricher
             if ($locPart !== '') {
                 $parts = array_map('trim', explode(',', $locPart));
                 $lastPart = end($parts);
-                if ($lastPart !== false && strlen($lastPart) > 1) {
+                if (strlen($lastPart) > 1) {
                     $country = $lastPart;
                 }
             }

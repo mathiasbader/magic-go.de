@@ -1,5 +1,5 @@
 <?php
-$allSets = [
+return [
     2023 => [
         [
             'name' => 'Phyrexia: All Will Be One',

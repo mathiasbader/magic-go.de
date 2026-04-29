@@ -7,6 +7,8 @@ and AI-suggested decks built from your collection.
 
 - **`composer.json`** — declares the autoload mappings (`Magic\` → `src/Magic/`,
   classmap for `src/Service/`). Run `composer install` to generate `vendor/`.
+- **`phpstan.neon`** — static analysis at level 5. Run `composer stan` (or
+  `vendor/bin/phpstan analyse`) before committing; the baseline is 0 errors.
 - **`src/Magic/`** — domain code under the `Magic\` namespace, autoloaded by
   Composer's PSR-4. Entry points start with
   `require_once __DIR__ . '/.../vendor/autoload.php';` followed by
