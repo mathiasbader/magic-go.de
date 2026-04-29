@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ deck.name }} - Magic Decks</title>
+    <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
+    <link rel="icon" type="image/png" href="/img/favicon.png">
+    <link rel="stylesheet" href="/cards/assets/deck.css">
+</head>
+<body>
+    <div class="container">
+        <a href="/decks/" class="back-link">&larr; My Decks</a>
+
+        <div class="deck-header">
+            {% if main_card_image %}
+                <div class="deck-header-img">
+                    {% if main_card_card_id %}
+                        <a href="/cards/{{ main_card_card_id }}"><img src="/img/cache?url={{ main_card_image|url_encode }}" alt="{{ deck.main_card }}"></a>
+                    {% else %}
+                        <img src="/img/cache?url={{ main_card_image|url_encode }}" alt="{{ deck.main_card }}">
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <div class="deck-header-info">
+                <h1>
+                    {% set colors = (deck.colors|default(''))|upper %}
+                    {% if colors == '' %}
+                        <span class="mana C" title="Colorless">C</span>
+                    {% else %}
+                        {% for c in colors|split('') %}
+                            <span class="mana {{ c }}" title="{{ c }}">{{ c }}</span>
+                        {% endfor %}
+                    {% endif %}
+                    <span>{{ deck.name }}</span>
+                </h1>
+                <div class="deck-meta">
+                    {% if deck.format %}<span><b>{{ deck.format }}</b></span>{% endif %}
+                    {% if deck.archetype %}<span>{{ deck.archetype }}</span>{% endif %}
+                    {% if deck.card_count %}<span>{{ deck.card_count }} cards</span>{% endif %}
+                    {% if deck.main_card %}<span>Main: <b>{{ deck.main_card }}</b></span>{% endif %}
+                </div>
+                {% if deck.strategy %}
+                    <p style="font-size:0.95rem;line-height:1.55;color:var(--text);">{{ deck.strategy|nl2br }}</p>
+                {% endif %}
+                <div class="deck-actions">
+                    <button class="fav {{ deck.is_favorite ? 'on' : '' }}" data-act="fav">{{ deck.is_favorite ? '★ Favorite' : '☆ Favorite' }}</button>
+                    <button class="del" data-act="del">Delete deck</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="deck-body">
+            {% if deck.strengths %}
+                <section><h2>Strengths</h2><p>{{ deck.strengths|nl2br }}</p></section>
+            {% endif %}
+            {% if deck.weaknesses %}
+                <section><h2>Weaknesses</h2><p>{{ deck.weaknesses|nl2br }}</p></section>
+            {% endif %}
+
+            {% if owned is not empty or unowned is not empty %}
+                <section>
+                    <h2>Decklist ({{ total_owned }} / {{ total_listed }} in collection)</h2>
+                    <div class="card-grid">
+                        {% for c in owned %}
+                            {% set img = c.image_uri_normal ?: c.image_uri_small %}
+                            <a class="card-tile{{ c.is_anchor ? ' anchor' : '' }}" href="/cards/{{ c.id }}" title="{{ c.name }}">
+                                <div class="card-tile-wrap">
+                                    {% if img %}
+                                        <img src="/img/cache?url={{ img|url_encode }}" alt="{{ c.name }}" loading="lazy">
+                                    {% else %}
+                                        <div class="placeholder">{{ c.name }}</div>
+                                    {% endif %}
+                                    {% if c.count > 1 %}<span class="qty-badge">{{ c.count }}x</span>{% endif %}
+                                </div>
+                                <div class="body">
+                                    <div class="name">{{ c.name }}</div>
+                                    <div class="meta">
+                                        {{ c.type_line ?: '' }}
+                                        {%- if c.mana_cost %} &middot; {{ c.mana_cost }}{% endif %}
+                                    </div>
+                                </div>
+                            </a>
+                        {% endfor %}
+                        {% for entry in unowned %}
+                            <div class="card-tile not-owned" title="Not in your collection">
+                                <div class="card-tile-wrap">
+                                    <div class="placeholder">{{ entry.name }}</div>
+                                    {% if entry.count > 1 %}<span class="qty-badge">{{ entry.count }}x</span>{% endif %}
+                                </div>
+                                <div class="body">
+                                    <div class="name">{{ entry.name }}</div>
+                                    <div class="meta" style="color:var(--red);">Not in collection</div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </section>
+            {% endif %}
+
+            {% if deck.missing_cards is not empty %}
+                <section>
+                    <h2>Cards that would improve the deck</h2>
+                    <div class="missing-list">
+                        {% for name in deck.missing_cards %}
+                            <span>{{ name }}</span>
+                        {% endfor %}
+                    </div>
+                </section>
+            {% endif %}
+
+            {% if deck.mana_curve is iterable and deck.mana_curve|length > 0 %}
+                {% set curve_max = max(max(deck.mana_curve), 1) %}
+                {% set curve_labels = ['0','1','2','3','4','5','6+'] %}
+                <section>
+                    <h2>Mana curve</h2>
+                    <div class="deck-curve">
+                        {% for i, n in deck.mana_curve %}
+                            <div class="bar" style="height:{{ ((n / curve_max) * 100)|round }}%;">
+                                <b>{{ n }}</b>
+                                <span>{{ curve_labels[i]|default(i) }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </section>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        window.MAGIC_DECK = {
+            id: {{ deck.id }},
+            csrf: {{ csrf|json_encode|raw }},
+        };
+    </script>
+    <script src="/cards/assets/deck.js"></script>
+</body>
+</html>

@@ -4,7 +4,8 @@
     "type": "project",
     "license": "proprietary",
     "require": {
-        "php": ">=8.2"
+        "php": ">=8.2",
+        "twig/twig": "^3.24"
     },
     "require-dev": {
         "phpstan/phpstan": "^2.1"

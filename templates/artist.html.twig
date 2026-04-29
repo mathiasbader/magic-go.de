@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ artist.name }} - Magic: The Gathering</title>
+    <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
+    <link rel="icon" type="image/png" href="/img/favicon.png">
+    <link rel="stylesheet" href="/cards/assets/artist.css">
+</head>
+<body>
+    <div class="container">
+        <a href="/artists/" class="back-link">&larr; Artists</a>
+        <h1>{{ artist.name }}</h1>
+        <div class="artist-meta">
+            {{ grouped|length }} card{{ grouped|length != 1 ? 's' : '' }} &middot;
+            {{ total_value|number_format(2, ',', '.') }} &euro;
+            {%- if artist.birth_year %} &middot; b. {{ artist.birth_year }}{% endif %}
+        </div>
+        {% if details %}
+            <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:0.75rem;line-height:1.5;white-space:pre-line;">{{ details|join("\n") }}</div>
+        {% endif %}
+
+        <div class="artist-url" id="artist-url-area">
+            {% for u in urls %}
+                <div style="margin-bottom:0.3rem;">
+                    <a href="{{ u.url }}" target="_blank" rel="noopener">{{ u.label ?: u.url }}</a>
+                    <span class="no-url" onclick="deleteUrl({{ u.id }})" title="Remove">&times;</span>
+                </div>
+            {% endfor %}
+            <span class="no-url" onclick="showUrlEdit()">+ Add link</span>
+        </div>
+
+        <div class="card-grid">
+            {% for card in grouped %}
+                <div class="card-item">
+                    <a href="/cards/{{ card.id }}">
+                        {% if card.image_uri_normal %}
+                            <img src="/img/cache?url={{ card.image_uri_normal|url_encode }}" alt="{{ card.name }}" loading="lazy">
+                        {% endif %}
+                    </a>
+                    <div class="card-item-info">
+                        <div class="card-item-name" title="{{ card.name }}">
+                            {{- card.name -}}
+                            {% if card.count > 1 %} <span style="color:var(--text-muted);">({{ card.count }}x)</span>{% endif %}
+                        </div>
+                        {% if card.total_price > 0 %}
+                            <div class="card-item-price">{{ card.total_price|number_format(2, ',', '.') }} &euro;</div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        window.MAGIC_ARTIST = {
+            id: {{ artist.id }},
+            name: {{ artist.name|json_encode|raw }},
+            csrf: {{ csrf|json_encode|raw }},
+        };
+    </script>
+    <script src="/cards/assets/artist.js"></script>
+</body>
+</html>

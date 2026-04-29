@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic Go — planning poker for distributed scrum teams</title>
+    <meta name="description" content="Real-time sprint estimation. Spin up a session, share a link, align on story points before standup ends.">
+    <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
+    <link rel="icon" type="image/png" href="/img/favicon.png">
+    <link rel="stylesheet" href="/landing.css">
+</head>
+<body>
+    <nav class="nav">
+        <a href="/" class="brand">
+            <img src="/img/favicon.svg" alt="">
+            Magic Go
+        </a>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#how">How it works</a>
+            <a href="#signin" class="nav-cta">Sign in</a>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <h1>Estimate sprints in seconds, <span>not arguments</span>.</h1>
+        <p>
+            Magic Go is a real-time planning poker tool for distributed scrum teams.
+            Spin up a session, share a link, and align on story points before standup ends.
+        </p>
+        <div class="hero-actions">
+            <a href="#signin" class="btn btn-primary">Sign in to your team</a>
+            <a href="#how" class="btn btn-ghost">See how it works</a>
+        </div>
+        <div class="poker-row">
+            <div class="poker-card">1</div>
+            <div class="poker-card">2</div>
+            <div class="poker-card">3</div>
+            <div class="poker-card accent">5</div>
+            <div class="poker-card">8</div>
+            <div class="poker-card">13</div>
+            <div class="poker-card">21</div>
+            <div class="poker-card">?</div>
+        </div>
+    </header>
+
+    <section id="features">
+        <div class="section-inner">
+            <div class="section-eyebrow">Features</div>
+            <h2 class="section-title">Everything you need to estimate, nothing you don't.</h2>
+            <div class="features">
+                {% set items = [
+                    {icon: '★', title: 'Planning Poker', text: "Fibonacci, T-shirt sizes, or your own custom decks. Switch mid-session, no setup needed."},
+                    {icon: '⚡', title: 'Real-time', text: "Everyone votes simultaneously and reveals together. No more waiting for the slowest typer."},
+                    {icon: '🔗', title: 'Just a link', text: "No installs, no signups for your team. Share the room link in chat and they're in."},
+                    {icon: '📊', title: 'Sprint history', text: "Velocity tracking and burndown charts across sprints. Plan the next one with real numbers."},
+                    {icon: '💬', title: 'Discussion mode', text: "When estimates diverge, the highest and lowest voters explain. Built into the flow."},
+                    {icon: '🛡', title: 'Anonymous voting', text: "Reveal numbers, not names — until the team is ready to discuss. Avoids anchoring bias."}
+                ] %}
+                {% for item in items %}
+                    <div class="feature">
+                        <div class="feature-icon">{{ item.icon }}</div>
+                        <h3>{{ item.title }}</h3>
+                        <p>{{ item.text }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <section id="how">
+        <div class="section-inner">
+            <div class="section-eyebrow">How it works</div>
+            <h2 class="section-title">Three steps from refinement to commit.</h2>
+            <div class="steps">
+                {% set steps = [
+                    {n: 1, title: 'Start a session', text: "Name your sprint, pick your deck, you're done in 10 seconds."},
+                    {n: 2, title: 'Invite the team', text: "Drop the room link in Slack or your standup invite. They join with one click."},
+                    {n: 3, title: 'Estimate together', text: "Discuss the story, vote, reveal, commit. Move to the next ticket."}
+                ] %}
+                {% for s in steps %}
+                    <div class="step">
+                        <div class="step-num">{{ s.n }}</div>
+                        <h3>{{ s.title }}</h3>
+                        <p>{{ s.text }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <section id="signin" class="signin-section">
+        <div class="signin-box">
+            <h2>Sign in</h2>
+            <div class="sub">Continue to your team's planning workspace.</div>
+            <form method="post" action="/#signin">
+                {% if error %}
+                    <div class="error">{{ error }}</div>
+                {% endif %}
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required autocomplete="email">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required autocomplete="current-password">
+                <button type="submit">Sign in</button>
+            </form>
+        </div>
+    </section>
+
+    <footer>
+        &copy; {{ "now"|date("Y") }} Magic Go &middot; planning poker for scrum teams
+    </footer>
+
+    {% if error %}
+        <script>document.getElementById('signin').scrollIntoView({ behavior: 'smooth' });</script>
+    {% endif %}
+</body>
+</html>
