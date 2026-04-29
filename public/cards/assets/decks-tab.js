@@ -55,7 +55,7 @@
     const LOADING_SUBSET_SIZE = 12;
     // Default expectation for the FIRST run (before we have history). One deck
     // is much faster than the old multi-deck batch — calibrate accordingly.
-    const ESTIMATED_LOADING_SECONDS = 45;
+    const ESTIMATED_LOADING_SECONDS = 75;
 
     let decksLoaded = false;
     let loadingTimer = null;
@@ -132,8 +132,13 @@
 
     function renderManaPips(colors) {
         const cs = (colors || '').toUpperCase();
-        if (!cs) return '<span class="mana C" title="Colorless">C</span>';
-        return cs.split('').map(c => `<span class="mana ${c}" title="${c}">${c}</span>`).join('');
+        const pip = c => {
+            const url = `https://svgs.scryfall.io/card-symbols/${c}.svg`;
+            const labels = { W: 'White', U: 'Blue', B: 'Black', R: 'Red', G: 'Green', C: 'Colorless' };
+            return `<img class="mana-pip" src="/img/cache?url=${encodeURIComponent(url)}" alt="${c}" title="${labels[c] || c}">`;
+        };
+        if (!cs) return pip('C');
+        return cs.split('').map(pip).join('');
     }
 
     function renderManaCurve(curve) {

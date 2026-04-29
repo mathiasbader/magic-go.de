@@ -93,6 +93,29 @@ final class DeckService
             }
         }
 
+        // Card-class sort: non-lands first, then non-basic lands (with abilities),
+        // then basic lands. Stable within each group (PHP usort is not stable).
+        // Class: 0 = non-land, 1 = non-basic land, 2 = basic land.
+        $stableClassSort = function (array &$list, callable $classify): void {
+            $i = 0;
+            foreach ($list as &$r) { $r['_idx'] = $i++; }
+            unset($r);
+            usort($list, function ($a, $b) use ($classify) {
+                $cmp = $classify($a) <=> $classify($b);
+                return $cmp !== 0 ? $cmp : $a['_idx'] <=> $b['_idx'];
+            });
+            foreach ($list as &$r) { unset($r['_idx']); }
+            unset($r);
+        };
+        $classifyOwned = function (array $r): int {
+            $tl = (string)($r['type_line'] ?? '');
+            if (stripos($tl, 'Land') === false) return 0;
+            return stripos($tl, 'Basic') !== false ? 2 : 1;
+        };
+        $classifyUnowned = fn(array $r) => $this->classifyByName((string)$r['name']);
+        $stableClassSort($owned, $classifyOwned);
+        $stableClassSort($unowned, $classifyUnowned);
+
         // Main-card image: try named main_card first, then any owned card.
         $mainCardImage = null;
         $mainCardCardId = null;
@@ -249,6 +272,20 @@ final class DeckService
             if ($img) return (string)$img;
         }
         return null;
+    }
+
+    /** Returns 0 = non-land, 1 = non-basic land, 2 = basic land. */
+    private function classifyByName(string $name): int
+    {
+        $basics = ['plains', 'island', 'swamp', 'mountain', 'forest', 'wastes'];
+        $lower = strtolower(trim($name));
+        $stripped = preg_replace('/^snow-covered\s+/', '', $lower);
+        if (in_array($lower, $basics, true) || in_array($stripped, $basics, true)) return 2;
+        $stmt = $this->pdo->prepare('SELECT type_line FROM magic_cards WHERE LOWER(name) = LOWER(:n) AND type_line IS NOT NULL LIMIT 1');
+        $stmt->execute(['n' => $name]);
+        $tl = (string)$stmt->fetchColumn();
+        if ($tl === '' || stripos($tl, 'Land') === false) return 0;
+        return stripos($tl, 'Basic') !== false ? 2 : 1;
     }
 
     /** @param array<string,mixed> $deck mutated in place */

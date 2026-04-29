@@ -39,7 +39,8 @@
         const name = tile.dataset.name;
         if (!name) return;
         try {
-            const r = await fetch('/api/scryfall?path=' + encodeURIComponent('/cards/named?fuzzy=' + name));
+            const path = '/cards/named?fuzzy=' + encodeURIComponent(name);
+            const r = await fetch('/api/scryfall?path=' + encodeURIComponent(path));
             if (!r.ok) return;
             const card = await r.json();
             const img = card.image_uris?.normal

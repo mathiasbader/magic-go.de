@@ -369,6 +369,7 @@ header h1 { font-size: 1.5rem; font-weight: 700; }
 .deck-actions button.del:hover { color: var(--red); border-color: var(--red); }
 
 /* Mana pips (W/U/B/R/G + Colorless) */
+.mana-pip { display: inline-block; width: 1.4rem; height: 1.4rem; vertical-align: middle; }
 .mana {
     display: inline-block; width: 1.1rem; height: 1.1rem; border-radius: 50%;
     font-size: 0.7rem; font-weight: 700; text-align: center; line-height: 1.1rem;

@@ -26,12 +26,12 @@
             <div class="deck-header-info">
                 <h1>
                     {% set colors = (deck.colors|default(''))|upper %}
+                    {% set color_names = {'W':'White','U':'Blue','B':'Black','R':'Red','G':'Green','C':'Colorless'} %}
+                    {% set pip_url = 'https://svgs.scryfall.io/card-symbols/' %}
                     {% if colors == '' %}
-                        <span class="mana C" title="Colorless">C</span>
+                        <img class="mana-pip" src="/img/cache?url={{ (pip_url ~ 'C.svg')|url_encode }}" alt="C" title="Colorless">
                     {% else %}
-                        {% for c in colors|split('') %}
-                            <span class="mana {{ c }}" title="{{ c }}">{{ c }}</span>
-                        {% endfor %}
+                        {% for c in colors|split('') %}<img class="mana-pip" src="/img/cache?url={{ (pip_url ~ c ~ '.svg')|url_encode }}" alt="{{ c }}" title="{{ color_names[c] ?? c }}">{% endfor %}
                     {% endif %}
                     <span>{{ deck.name }}</span>
                 </h1>
