@@ -49,10 +49,16 @@
                 body: JSON.stringify({ action, _csrf: M.csrf, ...data }),
                 signal: opts.signal,
             });
+            const text = await resp.text();
             try {
-                return await resp.json();
+                return JSON.parse(text);
             } catch {
-                return { error: 'Invalid server response', status: resp.status, detail: `HTTP ${resp.status}` };
+                const snippet = text.replace(/\s+/g, ' ').trim().slice(0, 500) || '(empty body)';
+                return {
+                    error: 'Invalid server response',
+                    status: resp.status,
+                    detail: `HTTP ${resp.status} returned non-JSON: ${snippet}`,
+                };
             }
         } catch (e) {
             if (e.name === 'AbortError') return { error: 'Cancelled', cancelled: true };

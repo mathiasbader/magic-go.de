@@ -31,4 +31,28 @@
             }
         });
     });
+
+    // Enrich the "Cards that would improve the deck" tiles with the Scryfall
+    // image + a click-through to the card detail page (which can render any
+    // Scryfall ID, even for cards not in the user's collection).
+    document.querySelectorAll('.missing-card').forEach(async tile => {
+        const name = tile.dataset.name;
+        if (!name) return;
+        try {
+            const r = await fetch('/api/scryfall?path=' + encodeURIComponent('/cards/named?fuzzy=' + name));
+            if (!r.ok) return;
+            const card = await r.json();
+            const img = card.image_uris?.normal
+                || card.image_uris?.small
+                || card.card_faces?.[0]?.image_uris?.normal
+                || card.card_faces?.[0]?.image_uris?.small;
+            if (img) {
+                const wrap = tile.querySelector('.card-tile-wrap');
+                wrap.innerHTML = `<img src="/img/cache?url=${encodeURIComponent(img)}" alt="${card.name}" loading="lazy">`;
+            }
+            if (card.id) {
+                tile.setAttribute('href', '/cards/' + card.id);
+            }
+        } catch {}
+    });
 })();

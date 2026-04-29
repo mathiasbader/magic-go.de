@@ -4,6 +4,7 @@ namespace Magic;
 
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
+use Twig\TwigFilter;
 
 /**
  * Static facade around Twig — keeps the call sites in entry points small:
@@ -37,7 +38,18 @@ final class View
                 'auto_reload' => true,
                 'strict_variables' => true,
             ]);
+            self::$twig->addFilter(new TwigFilter('mana', self::manaFilter(...), ['is_safe' => ['html']]));
         }
         return self::$twig;
+    }
+
+    private static function manaFilter(?string $cost): string
+    {
+        if (!$cost) return '';
+        return preg_replace_callback('/\{([^}]+)\}/', static function (array $m): string {
+            $code = strtoupper(str_replace('/', '', $m[1]));
+            $url = 'https://svgs.scryfall.io/card-symbols/' . rawurlencode($code) . '.svg';
+            return '<img src="/img/cache?url=' . rawurlencode($url) . '" alt="{' . htmlspecialchars($m[1], ENT_QUOTES) . '}" style="width:1.1em;height:1.1em;vertical-align:-0.15em;margin-right:3px;">';
+        }, $cost);
     }
 }

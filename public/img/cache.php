@@ -74,7 +74,6 @@ curl_setopt_array($ch, $opts);
 $data = curl_exec($ch);
 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 $contentType = (string)curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
-curl_close($ch);
 
 if ($httpCode !== 200 || !$data || !looksLikeImage($contentType, $data)) {
     // Either the request failed or something other than an image came back

@@ -119,6 +119,7 @@
             </div>`;
         document.title = owned.name + ' - Magic: The Gathering';
         if (owned.image_uri_small) setFavicon(cachedImg(owned.image_uri_small));
+        if (artCropUrl) { const p = new Image(); p.src = cachedImg(artCropUrl); }
     }
 
     function render(card, resolvedPrice, priceIsEnglish) {
@@ -239,6 +240,7 @@
         document.title = displayName + ' - Magic: The Gathering';
         const smallImg = card.image_uris?.small || card.card_faces?.[0]?.image_uris?.small || '';
         if (smallImg) setFavicon(cachedImg(smallImg));
+        if (artCropImg) { const p = new Image(); p.src = cachedImg(artCropImg); }
     }
 
     function esc(s) {

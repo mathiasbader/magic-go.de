@@ -37,11 +37,12 @@ body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background
 .card-tile.anchor { border-color: #facc15; box-shadow: 0 0 0 1px #facc15 inset; }
 .card-tile.not-owned { opacity: 0.55; cursor: default; }
 .card-tile.not-owned:hover { transform: none; border-color: var(--border); }
-.card-tile img { width: 100%; aspect-ratio: 5 / 7; object-fit: cover; display: block; background: #000; }
+.card-tile-wrap img { width: 100%; aspect-ratio: 5 / 7; object-fit: cover; display: block; background: #000; }
 .card-tile .placeholder { width: 100%; aspect-ratio: 5 / 7; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 0.8rem; padding: 0.5rem; text-align: center; }
 .card-tile .body { padding: 0.5rem 0.6rem; font-size: 0.8rem; line-height: 1.3; }
 .card-tile .body .name { font-weight: 600; }
 .card-tile .body .meta { color: var(--text-muted); font-size: 0.7rem; margin-top: 0.15rem; }
+.card-tile .body .meta img { display: inline-block; width: 1em; height: 1em; vertical-align: -0.15em; margin: 0 3px 2px 0; }
 .card-tile .qty-badge { position: absolute; top: 0.25rem; right: 0.25rem; background: rgba(0,0,0,0.75); color: #fff; font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 600; }
 .card-tile-wrap { position: relative; }
 .missing-list { display: flex; flex-wrap: wrap; gap: 0.4rem; }

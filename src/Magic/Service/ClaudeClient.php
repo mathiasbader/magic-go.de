@@ -37,7 +37,6 @@ final class ClaudeClient
         $body = curl_exec($ch);
         $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $err = curl_error($ch);
-        curl_close($ch);
 
         if ($err !== '') {
             throw new ClaudeApiException('Claude API request failed', 502, $err);

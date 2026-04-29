@@ -176,8 +176,15 @@
     async function loadDecks() {
         const list = document.getElementById('decks-list');
         const empty = document.getElementById('decks-empty-msg');
+        empty.style.display = 'none';
+        if (!decksLoaded) {
+            list.innerHTML = '<div class="decks-list-loading"><span class="spinner"></span>Decks loading…</div>';
+        }
         const decks = await M.api('list_decks');
-        if (!Array.isArray(decks)) return;
+        if (!Array.isArray(decks)) {
+            list.innerHTML = '';
+            return;
+        }
         list.innerHTML = decks.map(renderDeck).join('');
         empty.style.display = decks.length ? 'none' : '';
         decksLoaded = true;

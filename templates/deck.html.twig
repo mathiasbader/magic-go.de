@@ -78,7 +78,7 @@
                                     <div class="name">{{ c.name }}</div>
                                     <div class="meta">
                                         {{ c.type_line ?: '' }}
-                                        {%- if c.mana_cost %} &middot; {{ c.mana_cost }}{% endif %}
+                                        {%- if c.mana_cost %} &middot; {{ c.mana_cost|mana }}{% endif %}
                                     </div>
                                 </div>
                             </a>
@@ -102,9 +102,17 @@
             {% if deck.missing_cards is not empty %}
                 <section>
                     <h2>Cards that would improve the deck</h2>
-                    <div class="missing-list">
+                    <div class="card-grid">
                         {% for name in deck.missing_cards %}
-                            <span>{{ name }}</span>
+                            <a class="card-tile not-owned missing-card" data-name="{{ name }}" title="Not in your collection">
+                                <div class="card-tile-wrap">
+                                    <div class="placeholder">{{ name }}</div>
+                                </div>
+                                <div class="body">
+                                    <div class="name">{{ name }}</div>
+                                    <div class="meta" style="color:var(--red);">Not in collection</div>
+                                </div>
+                            </a>
                         {% endfor %}
                     </div>
                 </section>
