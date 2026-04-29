@@ -19,3 +19,4 @@ jobs:
           script: |
             cd www/htdocs/w017ed61/pages/magic-go.de/
             git pull
+            composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
