@@ -17,6 +17,6 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
-            cd www/htdocs/w017ed61/pages/magic-go.de/
+            cd www/htdocs/w021e22e/pages/magic-go.de/
             git pull
             composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
