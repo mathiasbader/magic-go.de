@@ -1,0 +1,44 @@
+# Paths rsync must never touch on production.
+# Leading "/" anchors a pattern to the deploy root; a pattern without a slash
+# matches that basename at any depth.
+#
+# IMPORTANT: every pattern here means BOTH "do not send" and "do not delete".
+# rsync's --delete leaves excluded paths alone. So this file protects things on
+# the server, it never cleans anything up. Files already on production that
+# should not be there are a one-time manual removal.
+#
+# Anything NOT listed here is deployment-managed: overwritten from the build,
+# and deleted from the server if the build does not contain it.
+#
+# Keep section 1 as short as the app allows. Everything in it is a file no
+# deploy will ever overwrite or remove, which is exactly the property an
+# attacker wants from a foothold. Managed paths self-heal on the next push.
+#
+# Note on the *_example.php templates: they are tracked, but the broad patterns
+# below also match them, so production keeps whatever copy it already has.
+# Harmless, they are references rather than runtime files.
+
+# --- 1. server-owned, must survive ---------------------------------------
+# Database credentials, gitignored, server only.
+/config/db.php
+/config/db_*.php
+# Generated card images: rebuilt at runtime, expensive to lose.
+/public/img/card_cache/
+# Runtime scratch.
+/var/
+
+# --- 2. dev-only, do not ship --------------------------------------------
+# On production now only because "git pull" shipped every tracked file.
+# Excluding them stops further sends but does NOT remove what is already there;
+# that is the one-time cleanup listed in the deployment tracker.
+/.git/
+/.github/
+/.gitignore
+/.deployignore
+/.ddev/
+/.idea/
+/.claude/
+/Readme.md
+# Composer runs in the CI runner now.
+/composer.json
+/composer.lock

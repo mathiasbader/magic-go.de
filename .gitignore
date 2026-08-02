@@ -4,3 +4,6 @@ config/db_*.php
 public/img/card_cache/*
 /vendor/
 /var/
+
+# Written by the deploy workflow from the commit SHA, never by hand.
+/REVISION

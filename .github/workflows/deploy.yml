@@ -5,18 +5,107 @@ on:
     branches:
       - main
 
+concurrency:
+  group: production-deploy
+  cancel-in-progress: true
+
+env:
+  # The only two values that change per repository. Host, user and deploy path
+  # are all derived from the account, so a repo wired to the wrong account is
+  # visible on this page instead of surfacing at runtime, after it has already
+  # written somewhere it should not. Inline because this repository is private.
+  KAS_ACCOUNT: w021e22e
+  SITE_DIR: magic-go.de
+
+  # SAFETY: while this is set to "--dry-run", rsync only reports what it would
+  # do and changes nothing, and any migration step is skipped. Read one run's
+  # log, confirm the deletion list is what you expect, then set this to "".
+  DRY_RUN: "--dry-run"
+
 jobs:
-  deploy:
+  # PHPStan was already configured in this repo (level 5, phpstan.neon) with a
+  # "composer stan" script, but nothing ever ran it, so a regression it would
+  # have caught still reached production. Wiring it in here costs nothing: the
+  # codebase analyses clean today, so no baseline is needed.
+  analyse:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@master
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
-          key: ${{ secrets.PRIVATE_KEY }}
-          script: |
-            cd www/htdocs/w021e22e/pages/magic-go.de/
-            git pull
-            composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+          php-version: '8.5'
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/composer
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      # With dev dependencies, unlike the deploy build: phpstan lives there.
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: PHPStan
+        run: composer stan
+
+  deploy:
+    # A failing analysis blocks the deploy outright.
+    needs: analyse
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Must match production, otherwise the optimized autoloader and the
+      # platform check baked into vendor/ are built against the wrong PHP.
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/composer
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      # Production dependencies are built here rather than installed on the
+      # server, so a composer.lock change can no longer be forgotten.
+      - name: Build dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      # Without a .git directory on the server this file is the only record of
+      # what is deployed. It sits at the deploy root, above the docroot, so it
+      # is not web-reachable.
+      - name: Stamp revision
+        run: echo "${{ github.sha }}" > REVISION
+
+      # Plain ssh and rsync rather than a third-party action: one less
+      # unpinned dependency in the path to production.
+      - name: Load deploy key
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.PRIVATE_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          # ssh-keyscan defaults to a 5 second timeout, which this host does not
+          # reliably beat from a runner. Retry rather than fail the whole deploy
+          # on a slow handshake.
+          for attempt in 1 2 3; do
+            ssh-keyscan -T 15 "${{ env.KAS_ACCOUNT }}.kasserver.com" >> ~/.ssh/known_hosts && break
+            sleep 3
+          done
+          test -s ~/.ssh/known_hosts
+
+      # -rlptz  recurse, keep symlinks/permissions/times, compress
+      # --delete  remove production files absent from the build
+      # --stats   transfer totals, so deploy cost stays visible
+      # Owner and group are not set: that needs root, which we do not have.
+      - name: Transfer build to production
+        run: |
+          rsync -rlptzv --delete --stats --human-readable ${{ env.DRY_RUN }} \
+            --exclude-from=.deployignore \
+            -e "ssh -i ~/.ssh/id_deploy" \
+            ./ "ssh-${{ env.KAS_ACCOUNT }}@${{ env.KAS_ACCOUNT }}.kasserver.com:www/htdocs/${{ env.KAS_ACCOUNT }}/pages/${{ env.SITE_DIR }}/"
