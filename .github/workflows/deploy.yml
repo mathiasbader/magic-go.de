@@ -11,7 +11,7 @@ concurrency:
 
 env:
   # The only two values that change per repository. Host, user and deploy path
-  # are all derived from the account, so a repo wired to the wrong account is
+  # are all  derived from the account, so a repo wired to the wrong account is
   # visible on this page instead of surfacing at runtime, after it has already
   # written somewhere it should not. Inline because this repository is private.
   KAS_ACCOUNT: w021e22e
