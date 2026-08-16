@@ -7,5 +7,8 @@ parameters:
         - src
         - public
     excludePaths:
-        - public/img/card_cache
+        # The card cache is gitignored, so it exists locally but never in a
+        # fresh checkout. Without "(?)" PHPStan treats the missing directory as
+        # a config error and exits 1, which blocks the deploy job behind it.
+        - public/img/card_cache (?)
         - vendor
