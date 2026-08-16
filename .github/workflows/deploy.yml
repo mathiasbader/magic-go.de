@@ -20,7 +20,7 @@ env:
   # SAFETY: while this is set to "--dry-run", rsync only reports what it would
   # do and changes nothing, and any migration step is skipped. Read one run's
   # log, confirm the deletion list is what you expect, then set this to "".
-  DRY_RUN: "--dry-run"
+  DRY_RUN: ""
 
 jobs:
   # PHPStan was already configured in this repo (level 5, phpstan.neon) with a
