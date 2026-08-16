@@ -17,7 +17,7 @@ env:
   KAS_ACCOUNT: w021e22e
   SITE_DIR: magic-go.de
 
-  # SAFETY:  while this is set to "--dry-run", rsync only reports what it would
+  # SAFETY: while this is set to "--dry-run", rsync only reports what it would
   # do and changes nothing, and any migration step is skipped. Read one run's
   # log, confirm the deletion list is what you expect, then set this to "".
   DRY_RUN: "--dry-run"
